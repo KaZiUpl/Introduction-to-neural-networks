@@ -1,7 +1,7 @@
 import pygame
 import pygame.freetype
 import numpy as np
-
+import functools
 
 screen_width = 550
 cell_space = 5
@@ -30,27 +30,35 @@ def button_digit_click(digit):
 
 
 class Button:
-    def __init__(self, text, pos, action):
+    def __init__(self, text, pos, color,  function):
         self.text = text
-        self.action = action
         self.pos = pos
+        self.color = color
         self.rect = pygame.Rect(pos[0], pos[1], 50, 30)
+        self.function = function
 
     def click(self):
-        if self.action == 'digit':
-            print(self.text)
-        elif self.action == 'train':
-            print('train')
-        elif self.action == 'predict':
-            print('predict')
+        self.function()
 
     def draw(self):
-        pygame.draw.rect(screen, (128, 128, 128), self.rect)
+        pygame.draw.rect(screen, self.color, self.rect)
         game_font.render_to(
             screen, (self.pos[0]+5, self.pos[1]+5), self.text, (255, 255, 255))
 
 
 buttons = []
+
+
+def digit_click(number):
+    print('clicked ', number)
+
+
+def train():
+    print('train')
+
+
+def predict():
+    print('predict')
 
 
 def init():
@@ -73,12 +81,12 @@ def init():
         for x in range(5):
             digit = y*5+x
             buttons.append(
-                Button(str(y*5+x), (270 + x * 55, (y + 1) * 5 + y * 30), 'digit'))
+                Button(str(y*5+x), (270 + x * 55, (y + 1) * 5 + y * 30), (146, 145, 181), functools.partial(digit_click, y*5+x)))
     # add train and predict buttons
     buttons.append(
-        Button('train', (270, buttons[len(buttons) - 1].pos[1] + 40), 'train'))
+        Button('train', (270, buttons[len(buttons) - 1].pos[1] + 40), (255, 213, 0), functools.partial(train)))
     buttons.append(
-        Button('pred', (270+55, buttons[len(buttons) - 2].pos[1] + 40), 'predict'))
+        Button('pred', (270+55, buttons[len(buttons) - 2].pos[1] + 40), (0, 162, 255), functools.partial(predict)))
 
 
 def draw():
@@ -91,7 +99,7 @@ def draw():
             if squares[row, col] == 0:
                 pygame.draw.rect(screen, (96, 96, 96), rectangles[row][col])
             else:
-                pygame.draw.rect(screen, (0, 255, 157), rectangles[row][col])
+                pygame.draw.rect(screen, (146, 145, 181), rectangles[row][col])
             left += cell_w + cell_space
         left = cell_space
         top += cell_h + cell_space
