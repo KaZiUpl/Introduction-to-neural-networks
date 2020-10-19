@@ -2,11 +2,13 @@ import pygame
 import pygame.freetype
 import numpy as np
 import functools
+from data import number
+from perceptron import Perceptron
 
 screen_width = 550
 cell_space = 5
 cell_res_w = 5
-cell_res_h = 7
+cell_res_h = 5
 cell_w = int((250 - (cell_res_w + 1) * cell_space) /
              cell_res_w)  # calculate cell size
 cell_h = cell_w
@@ -21,12 +23,19 @@ pygame.display.set_caption('Digit recognizing')  # set window title
 
 # contains logical representation of states of cells
 squares = np.zeros((cell_res_h, cell_res_w))
-
 rectangles = []  # contains interface rectangles
+buttons = []  # contains interface buttons
+perceptrons = []  # contains perceptrons
 
-
-def button_digit_click(digit):
-    print(digit)
+# create and train perceptrons
+for _ in range(10):
+    labels = [-1 for i in range(10)]
+    labels[_] = 1
+    # flatten the data from 5x5 array to 25x1
+    training_data = [np.ravel(num) for num in number]
+    _perceptron = Perceptron(25)
+    _perceptron.train(training_data, labels)
+    perceptrons.append(_perceptron)
 
 
 class Button:
@@ -46,9 +55,6 @@ class Button:
             screen, (self.pos[0]+5, self.pos[1]+5), self.text, (255, 255, 255))
 
 
-buttons = []
-
-
 def digit_click(number):
     print('clicked ', number)
 
@@ -58,7 +64,9 @@ def train():
 
 
 def predict():
-    print('predict')
+    for i in range(len(perceptrons)):
+        if (perceptrons[i].predict([val for sublist in squares for val in sublist]) > 0):
+            print('predicted ', i)
 
 
 def init():
