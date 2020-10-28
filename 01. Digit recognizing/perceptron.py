@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 class Perceptron:
@@ -6,7 +7,7 @@ class Perceptron:
         self.iterations = iterations
         self.learning_rate = learning_rate
         self.no_of_inputs = no_of_inputs
-        self.weights = np.zeros(self.no_of_inputs + 1)
+        self.weights = np.random.rand(self.no_of_inputs + 1)
 
     def train(self, training_data, labels):
         for _ in range(self.iterations):
@@ -16,11 +17,44 @@ class Perceptron:
                     (label - prediction) * input
                 self.weights[0] += self.learning_rate * (label - prediction)
 
+    def trainSPLA(self, training_data, labels):
+        correct_flag = False
+        zippedList = list(zip(training_data, labels))
+
+        while correct_flag == False:
+            correct_flag = True
+            index = random.randint(0, len(zippedList) - 1)
+
+            input = zippedList[index][0]
+            label = zippedList[index][1]
+
+            prediction = self.predict(input)
+            err = label - prediction
+            if err != 0:
+                correct_flag = False
+                self.weights[1:] += self.learning_rate * err * input
+                self.weights[0] += self.learning_rate * err
+            else:
+                if self.checkPredictions(training_data, labels) == False:
+                    correct_flag = False
+
+    def trainPLA(self, training_data, labels):
+        print('trainPLA')
+
+    def trainPLARatchet(self, training_data, labels):
+        print('trainPLARatchet')
+
     def predict(self, input):
         # self.weights[0] == -theta
         summation = np.dot(input, self.weights[1:]) + self.weights[0]
-        if summation >= 0:
-            activation = 1
+        if summation > 0:
+            return 1
         else:
-            activation = -1
-        return activation
+            return -1
+
+    def checkPredictions(self, training_data, labels):
+        for input, label in zip(training_data, labels):
+            err = label - self.predict(input)
+            if err != 0:
+                return False
+        return True

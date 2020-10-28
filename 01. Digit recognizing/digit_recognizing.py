@@ -14,7 +14,7 @@ cell_w = int((250 - (cell_res_w + 1) * cell_space) /
 cell_h = cell_w
 
 screen_height = (cell_res_h + 1) * cell_space + \
-    cell_res_h * cell_h+300  # calculate window size
+    cell_res_h * cell_h + 300  # calculate window size
 
 pygame.init()
 game_font = pygame.freetype.SysFont(pygame.font.get_default_font(), 15)
@@ -22,19 +22,22 @@ screen = pygame.display.set_mode([screen_width, screen_height])
 pygame.display.set_caption('Digit recognizing')  # set window title
 
 # contains logical representation of states of cells
-squares = np.zeros((cell_res_h, cell_res_w))
+squares = 0-np.ones((cell_res_h, cell_res_w))
 rectangles = []  # contains interface rectangles
 buttons = []  # contains interface buttons
 perceptrons = []  # contains perceptrons
 
-# create and train perceptrons
-for _ in range(10):
-    labels = [-1 for i in range(10)]
-    labels[_] = 1
+# create perceptrons
+labels = []
+for i in range(10):
+    # labels = np.zeros(10)
+    # labels[i] = 1
+    _labels = [-1 for _ in range(10)]
+    _labels[i] = 1
+    labels.append(_labels)
     # flatten the data from 5x5 array to 25x1
     training_data = [np.ravel(num) for num in number]
     _perceptron = Perceptron(25)
-    _perceptron.train(training_data, labels)
     perceptrons.append(_perceptron)
 
 
@@ -53,20 +56,6 @@ class Button:
         pygame.draw.rect(screen, self.color, self.rect)
         game_font.render_to(
             screen, (self.pos[0]+5, self.pos[1]+5), self.text, (255, 255, 255))
-
-
-def digit_click(number):
-    print('clicked ', number)
-
-
-def train():
-    print('train')
-
-
-def predict():
-    for i in range(len(perceptrons)):
-        if (perceptrons[i].predict([val for sublist in squares for val in sublist]) > 0):
-            print('predicted ', i)
 
 
 def init():
@@ -104,7 +93,7 @@ def draw():
     for row in range(rows):
         for col in range(cols):
             rectangles[row][col] = pygame.Rect(left, top, cell_w, cell_h)
-            if squares[row, col] == 0:
+            if squares[row, col] == -1:
                 pygame.draw.rect(screen, (96, 96, 96), rectangles[row][col])
             else:
                 pygame.draw.rect(screen, (146, 145, 181), rectangles[row][col])
@@ -136,13 +125,36 @@ def main():
                 for row in range(len(rectangles)):
                     for col in range(len(rectangles[row])):
                         if rectangles[row][col].collidepoint(mouse_position):
-                            squares[row][col] = not squares[row][col]
+                            if squares[row][col] == 1:
+                                squares[row][col] = -1
+                            else:
+                                squares[row][col] = 1
                 # check buttons for click
                 for i in range(len(buttons)):
                     if (buttons[i].rect.collidepoint(mouse_position)):
                         buttons[i].click()
                 draw()
     pygame.quit()
+
+
+def digit_click(num):
+    global squares
+    squares = np.array(number[num])
+    draw()
+
+
+def train():
+    for i in range(10):
+        perceptrons[i].trainSPLA(training_data, labels[i])
+    print('trained')
+
+
+def predict():
+    print('predicted: ')
+    output = ''
+    for i in range(len(perceptrons)):
+        if (perceptrons[i].predict(np.ravel(squares)) > 0):
+            print(i)
 
 
 if __name__ == "__main__":
