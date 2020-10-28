@@ -145,7 +145,7 @@ def digit_click(num):
 
 def train():
     for i in range(10):
-        perceptrons[i].trainPLA(training_data, labels[i])
+        perceptrons[i].trainPLARatchet(training_data, labels[i])
     print('trained')
 
 
@@ -155,6 +155,7 @@ def predict():
     for i in range(len(perceptrons)):
         if (perceptrons[i].predict(np.ravel(squares)) > 0):
             print(i)
+    print('===')
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ class Perceptron:
 
             err = label - self.predict(input)
 
-            if (err != 0):
+            if err != 0:
                 # correct weights
                 self.weights[1:] += self.learning_rate * err * input
                 self.weights[0] += self.learning_rate * err
@@ -67,7 +67,30 @@ class Perceptron:
         self.weights = best_weights
 
     def trainPLARatchet(self, training_data, labels):
-        print('trainPLARatchet')
+        alive_timer = 0
+        best_weights = self.weights
+        best_alive_timer = best_examples_counter = 0
+
+        for _ in range(self.iterations):
+            index = random.randint(0, len(training_data) - 1)
+
+            input = training_data[index]
+            label = labels[index]
+
+            err = label - self.predict(input)
+
+            if err != 0:
+                self.weights[1:] += self.learning_rate * err * input
+                self.weights[0] += self.learning_rate * err
+                alive_timer = 0
+            else:
+                alive_timer += 1
+                correct_classif = self.correctClassifications(
+                    training_data, labels)
+                if alive_timer > best_alive_timer and correct_classif > best_examples_counter:
+                    best_weights = self.weights
+                    best_examples_counter = correct_classif
+        self.weights = best_weights
 
     def predict(self, input):
         # self.weights[0] == -theta
@@ -83,3 +106,11 @@ class Perceptron:
             if err != 0:
                 return False
         return True
+
+    def correctClassifications(self, training_data, labels):
+        out = 0
+        for input, label in zip(training_data, labels):
+            err = label - self.predict(input)
+            if err == 0:
+                out += 1
+        return out
