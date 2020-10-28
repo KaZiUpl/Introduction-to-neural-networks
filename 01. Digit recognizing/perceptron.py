@@ -3,7 +3,7 @@ import random
 
 
 class Perceptron:
-    def __init__(self, no_of_inputs, learning_rate=0.01, iterations=100):
+    def __init__(self, no_of_inputs, learning_rate=0.01, iterations=1000):
         self.iterations = iterations
         self.learning_rate = learning_rate
         self.no_of_inputs = no_of_inputs
@@ -39,7 +39,32 @@ class Perceptron:
                     correct_flag = False
 
     def trainPLA(self, training_data, labels):
-        print('trainPLA')
+        alive_timer = 0
+        best_weights = self.weights
+        best_alive_timer = 0
+
+        for _ in range(self.iterations):
+            index = random.randint(0, len(training_data) - 1)
+
+            input = training_data[index]
+            label = labels[index]
+
+            err = label - self.predict(input)
+
+            if (err != 0):
+                # correct weights
+                self.weights[1:] += self.learning_rate * err * input
+                self.weights[0] += self.learning_rate * err
+                alive_timer = 0
+            else:
+                # add alive timer and continue
+                alive_timer += 1
+                if alive_timer > best_alive_timer:
+                    # change best weights
+                    best_weights = self.weights
+                    best_alive_timer = alive_timer
+
+        self.weights = best_weights
 
     def trainPLARatchet(self, training_data, labels):
         print('trainPLARatchet')

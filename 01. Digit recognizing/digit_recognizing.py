@@ -145,7 +145,7 @@ def digit_click(num):
 
 def train():
     for i in range(10):
-        perceptrons[i].trainSPLA(training_data, labels[i])
+        perceptrons[i].trainPLA(training_data, labels[i])
     print('trained')
 
 
