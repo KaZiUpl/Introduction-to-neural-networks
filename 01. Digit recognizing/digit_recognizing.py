@@ -5,24 +5,23 @@ import functools
 from data import number
 from perceptron import Perceptron
 
-screen_width = 550
+screen_width = 600
 cell_space = 5
 cell_res_w = 5
 cell_res_h = 5
-cell_w = int((250 - (cell_res_w + 1) * cell_space) /
-             cell_res_w)  # calculate cell size
-cell_h = cell_w
+cell_h = cell_w = int((275 - (cell_res_w + 1) * cell_space) /
+                      cell_res_w)  # calculate cell size
 
 screen_height = (cell_res_h + 1) * cell_space + \
-    cell_res_h * cell_h + 300  # calculate window size
+    cell_res_h * cell_h  # calculate window size
 
 pygame.init()
-game_font = pygame.freetype.SysFont(pygame.font.get_default_font(), 15)
 screen = pygame.display.set_mode([screen_width, screen_height])
+
 pygame.display.set_caption('Digit recognizing')  # set window title
 
 # contains logical representation of states of cells
-squares = 0-np.ones((cell_res_h, cell_res_w))
+squares = -np.ones((cell_res_h, cell_res_w))
 rectangles = []  # contains interface rectangles
 buttons = []  # contains interface buttons
 perceptrons = []  # contains perceptrons
@@ -30,8 +29,6 @@ perceptrons = []  # contains perceptrons
 # create perceptrons
 labels = []
 for i in range(10):
-    # labels = np.zeros(10)
-    # labels[i] = 1
     _labels = [-1 for _ in range(10)]
     _labels[i] = 1
     labels.append(_labels)
@@ -54,8 +51,11 @@ class Button:
 
     def draw(self):
         pygame.draw.rect(screen, self.color, self.rect)
-        game_font.render_to(
-            screen, (self.pos[0]+5, self.pos[1]+5), self.text, (255, 255, 255))
+        font = pygame.font.SysFont('calibri', 20)
+        text = font.render(self.text, 1, (255, 255, 255))
+        x = self.pos[0] + 50/2 - text.get_width()/2
+        y = self.pos[1] + 30/2 - text.get_height()/2
+        screen.blit(text, (int(x), int(y)))
 
 
 def init():
@@ -73,17 +73,22 @@ def init():
         top += cell_h + cell_space
         rectangles.append(_rectangles)
 
+    left = 300
+    top = 5
     # add digit buttons
     for y in range(2):
         for x in range(5):
             digit = y*5+x
             buttons.append(
-                Button(str(y*5+x), (270 + x * 55, (y + 1) * 5 + y * 30), (146, 145, 181), functools.partial(digit_click, y*5+x)))
+                Button(str(y * 5 + x), (left + x * 55, top), (146, 145, 181), functools.partial(digit_click, y * 5 + x)))
+        top += 35
     # add train and predict buttons
     buttons.append(
-        Button('train', (270, buttons[len(buttons) - 1].pos[1] + 40), (255, 213, 0), functools.partial(train)))
+        Button('train', (left, top), (255, 213, 0), functools.partial(train)))
     buttons.append(
-        Button('pred', (270+55, buttons[len(buttons) - 2].pos[1] + 40), (0, 162, 255), functools.partial(predict)))
+        Button('pred', (left + 55, top), (0, 162, 255), functools.partial(predict)))
+    buttons.append(
+        Button('noise', (left+2*55, top), (135, 132, 132), functools.partial(noise_input)))
 
 
 def draw():
@@ -125,10 +130,7 @@ def main():
                 for row in range(len(rectangles)):
                     for col in range(len(rectangles[row])):
                         if rectangles[row][col].collidepoint(mouse_position):
-                            if squares[row][col] == 1:
-                                squares[row][col] = -1
-                            else:
-                                squares[row][col] = 1
+                            squares[row][col] = 1 if squares[row][col] == -1 else -1
                 # check buttons for click
                 for i in range(len(buttons)):
                     if (buttons[i].rect.collidepoint(mouse_position)):
@@ -156,6 +158,22 @@ def predict():
         if (perceptrons[i].predict(np.ravel(squares)) > 0):
             print(i)
     print('===')
+
+
+def noise_input():
+    global squares
+    squares = noisy(squares, 0.05)
+    draw()
+
+
+def noisy(data, noise_prob=0.1):
+    noise = np.random.binomial(1, noise_prob, len(np.ravel(data)))
+    data = np.ravel(data)
+    for i in range(len(data)):
+        if noise[i] == 1:
+            data[i] = 1 if data[i] == -1 else - 1
+
+    return data.reshape(squares.shape)
 
 
 if __name__ == "__main__":
