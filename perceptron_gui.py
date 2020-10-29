@@ -3,19 +3,17 @@ import pygame.freetype
 import numpy as np
 import functools
 
-screen_width = 550
+screen_width = 600
 cell_space = 5
 cell_res_w = 5
-cell_res_h = 7
-cell_w = int((250 - (cell_res_w + 1) * cell_space) /
-             cell_res_w)  # calculate cell size
-cell_h = cell_w
+cell_res_h = 5
+cell_h = cell_w = int((275 - (cell_res_w + 1) * cell_space) /
+                      cell_res_w)  # calculate cell size
 
 screen_height = (cell_res_h + 1) * cell_space + \
-    cell_res_h * cell_h+300  # calculate window size
+    cell_res_h * cell_h  # calculate window size
 
 pygame.init()
-game_font = pygame.freetype.SysFont(pygame.font.get_default_font(), 15)
 screen = pygame.display.set_mode([screen_width, screen_height])
 pygame.display.set_caption('Perceptron GUI')  # set window title
 
@@ -52,18 +50,6 @@ class Button:
 buttons = []
 
 
-def digit_click(number):
-    print('clicked ', number)
-
-
-def train():
-    print('train')
-
-
-def predict():
-    print('predict')
-
-
 def init():
     left = top = cell_space
     rows, cols = squares.shape
@@ -79,17 +65,22 @@ def init():
         top += cell_h + cell_space
         rectangles.append(_rectangles)
 
+    left = 300
+    top = 5
     # add digit buttons
     for y in range(2):
         for x in range(5):
             digit = y*5+x
             buttons.append(
-                Button(str(y*5+x), (270 + x * 55, (y + 1) * 5 + y * 30), (146, 145, 181), functools.partial(digit_click, y*5+x)))
+                Button(str(y * 5 + x), (left + x * 55, top), (146, 145, 181), functools.partial(digit_click, y * 5 + x)))
+        top += 35
     # add train and predict buttons
     buttons.append(
-        Button('train', (270, buttons[len(buttons) - 1].pos[1] + 40), (255, 213, 0), functools.partial(train)))
+        Button('train', (left, top), (255, 213, 0), functools.partial(train)))
     buttons.append(
-        Button('pred', (270+55, buttons[len(buttons) - 2].pos[1] + 40), (0, 162, 255), functools.partial(predict)))
+        Button('pred', (left + 55, top), (0, 162, 255), functools.partial(predict)))
+    buttons.append(
+        Button('noise', (left+2*55, top), (135, 132, 132), functools.partial(noise_input)))
 
 
 def draw():
@@ -138,6 +129,32 @@ def main():
                         buttons[i].click()
                 draw()
     pygame.quit()
+
+
+def digit_click(number):
+    print('clicked ', number)
+
+
+def train():
+    print('train')
+
+
+def predict():
+    print('predict')
+
+
+def noise_input():
+    print('noise')
+
+
+def noisy(data, noise_prob=0.1):
+    noise = np.random.binomial(1, noise_prob, len(np.ravel(data)))
+    data = np.ravel(data)
+    for i in range(len(data)):
+        if noise[i] == 1:
+            data[i] = 1 if data[i] == -1 else - 1
+
+    return data.reshape(squares.shape)
 
 
 if __name__ == "__main__":
