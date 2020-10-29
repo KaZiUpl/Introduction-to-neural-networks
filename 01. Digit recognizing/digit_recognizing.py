@@ -20,6 +20,44 @@ screen = pygame.display.set_mode([screen_width, screen_height])
 
 pygame.display.set_caption('Digit recognizing')  # set window title
 
+
+def digit_click(num):
+    global squares
+    squares = np.array(number[num])
+    draw()
+
+
+def train():
+    for i in range(10):
+        perceptrons[i].trainPLARatchet(training_data, labels[i])
+    print('trained')
+
+
+def predict():
+    print('predicted: ')
+    output = ''
+    for i in range(len(perceptrons)):
+        if (perceptrons[i].predict(np.ravel(squares)) > 0):
+            print(i)
+    print('===')
+
+
+def noise_input():
+    global squares
+    squares = noisy(squares, 0.05)
+    draw()
+
+
+def noisy(data, noise_prob=0.1):
+    noise = np.random.binomial(1, noise_prob, len(np.ravel(data)))
+    data = np.ravel(data)
+    for i in range(len(data)):
+        if noise[i] == 1:
+            data[i] = 1 if data[i] == -1 else - 1
+
+    return data.reshape(squares.shape)
+
+
 # contains logical representation of states of cells
 squares = -np.ones((cell_res_h, cell_res_w))
 rectangles = []  # contains interface rectangles
@@ -88,7 +126,7 @@ def init():
     buttons.append(
         Button('pred', (left + 55, top), (0, 162, 255), functools.partial(predict)))
     buttons.append(
-        Button('noise', (left+2*55, top), (135, 132, 132), functools.partial(noise_input)))
+        Button('noise', (left + 2 * 55, top), (135, 132, 132), functools.partial(noise_input)))
 
 
 def draw():
@@ -137,43 +175,6 @@ def main():
                         buttons[i].click()
                 draw()
     pygame.quit()
-
-
-def digit_click(num):
-    global squares
-    squares = np.array(number[num])
-    draw()
-
-
-def train():
-    for i in range(10):
-        perceptrons[i].trainPLARatchet(training_data, labels[i])
-    print('trained')
-
-
-def predict():
-    print('predicted: ')
-    output = ''
-    for i in range(len(perceptrons)):
-        if (perceptrons[i].predict(np.ravel(squares)) > 0):
-            print(i)
-    print('===')
-
-
-def noise_input():
-    global squares
-    squares = noisy(squares, 0.05)
-    draw()
-
-
-def noisy(data, noise_prob=0.1):
-    noise = np.random.binomial(1, noise_prob, len(np.ravel(data)))
-    data = np.ravel(data)
-    for i in range(len(data)):
-        if noise[i] == 1:
-            data[i] = 1 if data[i] == -1 else - 1
-
-    return data.reshape(squares.shape)
 
 
 if __name__ == "__main__":
