@@ -42,8 +42,11 @@ class Button:
 
     def draw(self):
         pygame.draw.rect(screen, self.color, self.rect)
-        game_font.render_to(
-            screen, (self.pos[0]+5, self.pos[1]+5), self.text, (255, 255, 255))
+        font = pygame.font.SysFont('calibri', 20)
+        text = font.render(self.text, 1, (255, 255, 255))
+        x = self.pos[0] + 50/2 - text.get_width()/2
+        y = self.pos[1] + 30/2 - text.get_height()/2
+        screen.blit(text, (int(x), int(y)))
 
 
 buttons = []
