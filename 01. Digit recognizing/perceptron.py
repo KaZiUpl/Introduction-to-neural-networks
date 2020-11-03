@@ -3,7 +3,7 @@ import random
 
 
 class Perceptron:
-    def __init__(self, no_of_inputs, learning_rate=0.01, iterations=1000):
+    def __init__(self, no_of_inputs, learning_rate=0.01, iterations=10000):
         self.iterations = iterations
         self.learning_rate = learning_rate
         self.no_of_inputs = no_of_inputs

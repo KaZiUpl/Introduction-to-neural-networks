@@ -5,6 +5,7 @@ import functools
 from data import number
 from perceptron import Perceptron
 import matplotlib.pyplot as plt
+import random
 
 screen_width = 600
 cell_space = 5
@@ -39,6 +40,12 @@ def add_digit(num):
     print(f'Added {num} to training data')
 
 
+def clear():
+    global squares
+    squares = -np.ones((5, 5))
+    draw()
+
+
 def train():
     for i in range(10):
         perceptrons[i].trainPLARatchet(training_data, labels[i])
@@ -56,23 +63,32 @@ def predict():
 
 def noise_input():
     global squares
-    squares = noisy(squares, 0.05)
+    squares = noisyBer(squares, 0.07)
     draw()
 
 
 def graph():
     global perceptrons
+    for i in range(len(perceptrons)):
+        plt.imshow(np.reshape(perceptrons[i].weights[1:], (5, 5)))
+        plt.savefig(f'{i}.png')
 
-    plt.imshow(np.reshape(perceptrons[0].weights[1:], (5, 5)))
-    plt.show()
 
-
-def noisy(data, noise_prob=0.1):
+def noisyBer(data, noise_prob=0.1):
     noise = np.random.binomial(1, noise_prob, len(np.ravel(data)))
     copy = np.ravel(np.copy(data))
-    for i in range(len(data)):
+    for i in range(len(copy)):
         if noise[i] == 1:
             copy[i] = 1 if copy[i] == -1 else - 1
+
+    return copy.reshape(data.shape)
+
+
+def noisy(data, no_of_noise=3):
+    noise = random.sample(range(len(np.ravel(data))), no_of_noise)
+    copy = np.ravel(np.copy(data))
+    for i in noise:
+        copy[i] = 1 if copy[i] == -1 else - 1
 
     return copy.reshape(data.shape)
 
@@ -106,7 +122,7 @@ for i in range(2):
         labels[data_index][len(labels[data_index]) - 1] = 1
         # create noisy training data
         training_example = training_data[data_index].copy()
-        training_example = noisy(training_example, 0.07)
+        training_example = noisyBer(training_example, 0.07)
         training_data.append(training_example)
 
 
@@ -157,6 +173,9 @@ def init():
     # add train and predict buttons
     buttons.append(
         Button('train', (left, top), (255, 213, 0), functools.partial(train)))
+    top += 35
+    buttons.append(
+        Button('clr', (left, top), (52, 52, 255), functools.partial(clear)))
     buttons.append(
         Button('pred', (left + 55, top), (0, 162, 255), functools.partial(predict)))
     buttons.append(
