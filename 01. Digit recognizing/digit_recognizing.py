@@ -4,6 +4,7 @@ import numpy as np
 import functools
 from data import number
 from perceptron import Perceptron
+import matplotlib.pyplot as plt
 
 screen_width = 600
 cell_space = 5
@@ -27,6 +28,17 @@ def digit_click(num):
     draw()
 
 
+def add_digit(num):
+    global training_data, labels, squares
+    copy = np.ravel(np.copy(squares))
+    for label in labels:
+        label.append(-1)
+    labels[num][len(labels[num]) - 1] = 1
+
+    training_data.append(copy)
+    print(f'Added {num} to training data')
+
+
 def train():
     for i in range(10):
         perceptrons[i].trainPLARatchet(training_data, labels[i])
@@ -48,14 +60,21 @@ def noise_input():
     draw()
 
 
+def graph():
+    global perceptrons
+
+    plt.imshow(np.reshape(perceptrons[0].weights[1:], (5, 5)))
+    plt.show()
+
+
 def noisy(data, noise_prob=0.1):
     noise = np.random.binomial(1, noise_prob, len(np.ravel(data)))
-    data = np.ravel(data)
+    copy = np.ravel(np.copy(data))
     for i in range(len(data)):
         if noise[i] == 1:
-            data[i] = 1 if data[i] == -1 else - 1
+            copy[i] = 1 if copy[i] == -1 else - 1
 
-    return data.reshape(squares.shape)
+    return copy.reshape(data.shape)
 
 
 # contains logical representation of states of cells
@@ -67,13 +86,28 @@ perceptrons = []  # contains perceptrons
 # create perceptrons
 labels = []
 for i in range(10):
+    _perceptron = Perceptron(25)
+    perceptrons.append(_perceptron)
+
+# prepare training data
+# flatten the data from 5x5 array to 25x1
+training_data = [np.ravel(num) for num in number]
+for i in range(10):
     _labels = [-1 for _ in range(10)]
     _labels[i] = 1
     labels.append(_labels)
-    # flatten the data from 5x5 array to 25x1
-    training_data = [np.ravel(num) for num in number]
-    _perceptron = Perceptron(25)
-    perceptrons.append(_perceptron)
+
+
+# add noisy data
+for i in range(2):
+    for data_index in range(10):
+        for label in labels:
+            label.append(-1)
+        labels[data_index][len(labels[data_index]) - 1] = 1
+        # create noisy training data
+        training_example = training_data[data_index].copy()
+        training_example = noisy(training_example, 0.07)
+        training_data.append(training_example)
 
 
 class Button:
@@ -127,6 +161,16 @@ def init():
         Button('pred', (left + 55, top), (0, 162, 255), functools.partial(predict)))
     buttons.append(
         Button('noise', (left + 2 * 55, top), (135, 132, 132), functools.partial(noise_input)))
+    buttons.append(
+        Button('plot', (left + 3 * 55, top), (148, 0, 211), functools.partial(graph)))
+
+    top += 35
+    for y in range(2):
+        for x in range(5):
+            digit = y*5+x
+            buttons.append(
+                Button(str(y * 5 + x), (left + x * 55, top), (0, 179, 0), functools.partial(add_digit, y * 5 + x)))
+        top += 35
 
 
 def draw():
