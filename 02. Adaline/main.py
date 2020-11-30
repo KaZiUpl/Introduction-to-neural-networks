@@ -26,7 +26,6 @@ pygame.display.set_caption('Adaline')
 def digit_click(num):
     global squares
     squares = np.array(number[num])
-    print(np.array(number[num]))
     draw()
 
 
@@ -40,6 +39,7 @@ def shift(direction):
         squares = np.roll(squares, -1, axis=1)
     elif direction == 'right':
         squares = np.roll(squares, 1, axis=1)
+    predict()
     draw()
 
 
@@ -80,22 +80,6 @@ def noisyBer(data, noise_prob=0.1):
             copy[i] = 1 if copy[i] == 0 else 0
 
     return copy.reshape(data.shape)
-
-
-def print_sq():
-    global squares
-    print('[')
-    for row in range(len(squares)):
-        row_str = '['
-        for col in range(len(squares[row])):
-            row_str += str(squares[row][col])
-            if col < len(squares[row]) - 1:
-                row_str += ','
-        row_str += ']'
-        if row < len(squares) - 1:
-            row_str += ','
-        print(row_str)
-    print(']')
 
 
 # contains logical representation of states of cells
@@ -170,8 +154,6 @@ def init():
         Button('clr', (left, top), (52, 52, 255), functools.partial(clear)))
     buttons.append(
         Button('pred', (left + 55, top), (0, 162, 255), functools.partial(predict)))
-    buttons.append(
-        Button('prt', (left + 2 * 55, top), (0, 162, 162), functools.partial(print_sq)))
 
     top += 35
     buttons.append(
