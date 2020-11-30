@@ -9,8 +9,8 @@ import random
 
 screen_width = 600
 cell_space = 5
-cell_res_w = 7
-cell_res_h = 7
+cell_res_w = 10
+cell_res_h = 10
 cell_h = cell_w = int((275 - (cell_res_w + 1) * cell_space) /
                       cell_res_w)  # calculate cell size
 
@@ -26,6 +26,7 @@ pygame.display.set_caption('Adaline')
 def digit_click(num):
     global squares
     squares = np.array(number[num])
+    print(np.array(number[num]))
     draw()
 
 
@@ -44,7 +45,7 @@ def shift(direction):
 
 def clear():
     global squares
-    squares = -np.ones((cell_res_h, cell_res_w))
+    squares = np.zeros((cell_res_h, cell_res_w))
     draw()
 
 
@@ -59,7 +60,6 @@ def predict():
     pre = []
     for i in range(len(perceptrons)):
         print(i, perceptrons[i].output(np.ravel(squares)))
-        print(perceptrons[i].weights)
         pre.append(perceptrons[i].output(np.ravel(squares)))
     print('---')
     print(pre.index(max(pre)))
@@ -72,26 +72,34 @@ def noise_input():
     draw()
 
 
-def graph():
-    global perceptrons
-    for i in range(len(perceptrons)):
-        plt.imshow(np.reshape(
-            perceptrons[i].weights[1:], (cell_res_h, cell_res_w)))
-        plt.savefig(f'{i}.png')
-
-
 def noisyBer(data, noise_prob=0.1):
     noise = np.random.binomial(1, noise_prob, len(np.ravel(data)))
     copy = np.ravel(np.copy(data))
     for i in range(len(copy)):
         if noise[i] == 1:
-            copy[i] = 1 if copy[i] == -1 else - 1
+            copy[i] = 1 if copy[i] == 0 else 0
 
     return copy.reshape(data.shape)
 
 
+def print_sq():
+    global squares
+    print('[')
+    for row in range(len(squares)):
+        row_str = '['
+        for col in range(len(squares[row])):
+            row_str += str(squares[row][col])
+            if col < len(squares[row]) - 1:
+                row_str += ','
+        row_str += ']'
+        if row < len(squares) - 1:
+            row_str += ','
+        print(row_str)
+    print(']')
+
+
 # contains logical representation of states of cells
-squares = -np.ones((cell_res_h, cell_res_w))
+squares = np.zeros((cell_res_h, cell_res_w))
 rectangles = []  # contains interface rectangles
 buttons = []  # contains interface buttons
 perceptrons = []  # contains perceptrons
@@ -105,7 +113,7 @@ for i in range(10):
 # prepare training data
 training_data = [np.ravel(num) for num in number]
 for i in range(10):
-    _labels = [-1 for _ in range(10)]
+    _labels = [0 for _ in range(10)]
     _labels[i] = 1
     labels.append(_labels)
 
@@ -163,7 +171,7 @@ def init():
     buttons.append(
         Button('pred', (left + 55, top), (0, 162, 255), functools.partial(predict)))
     buttons.append(
-        Button('plot', (left + 3 * 55, top), (148, 0, 211), functools.partial(graph)))
+        Button('prt', (left + 2 * 55, top), (0, 162, 162), functools.partial(print_sq)))
 
     top += 35
     buttons.append(
@@ -184,7 +192,7 @@ def draw():
     for row in range(rows):
         for col in range(cols):
             rectangles[row][col] = pygame.Rect(left, top, cell_w, cell_h)
-            if squares[row, col] == -1:
+            if squares[row][col] == 0:
                 pygame.draw.rect(screen, (96, 96, 96), rectangles[row][col])
             else:
                 pygame.draw.rect(screen, (146, 145, 181), rectangles[row][col])
@@ -216,7 +224,7 @@ def main():
                 for row in range(len(rectangles)):
                     for col in range(len(rectangles[row])):
                         if rectangles[row][col].collidepoint(mouse_position):
-                            squares[row][col] = 1 if squares[row][col] == -1 else -1
+                            squares[row][col] = 1 if squares[row][col] == 0 else 0
                 # check buttons for click
                 for i in range(len(buttons)):
                     if (buttons[i].rect.collidepoint(mouse_position)):
