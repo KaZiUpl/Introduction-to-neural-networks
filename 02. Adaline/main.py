@@ -6,6 +6,7 @@ from data import number
 from adaline import Adaline
 import matplotlib.pyplot as plt
 import random
+from termgraph import termgraph as termg
 
 screen_width = 600
 cell_space = 5
@@ -56,13 +57,36 @@ def train():
 
 
 def predict():
-    print('predicted: ')
+    labels = []
     pre = []
+    data = []
+    normal_data = []
+    result = ''
+
     for i in range(len(perceptrons)):
-        print(i, perceptrons[i].output(np.ravel(squares)))
         pre.append(perceptrons[i].output(np.ravel(squares)))
-    print('---')
-    print(pre.index(max(pre)))
+
+    norm = np.linalg.norm(pre)
+    pre = pre / norm
+    result += str(np.argmax(pre))
+
+    for i in range(10):
+        data.append([pre[i]])
+        labels.append(str(i))
+        normal_data.append([pre[i]*50])
+
+    len_categories = 1
+    args = {'title': None, 'width': 50,
+            'format': '{:<1.7f}', 'suffix': '', 'no_labels': False,
+            'color': None, 'vertical': False, 'stacked': True,
+            'different_scale': False, 'calendar': False,
+            'start_dt': None, 'custom_tick': '', 'delim': '',
+            'verbose': False, 'version': False}
+    colors = [94]
+
+    termg.stacked_graph(labels, data, normal_data,
+                        len_categories, args, colors)
+    print('prediction:', result)
     print('=======')
 
 

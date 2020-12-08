@@ -9,7 +9,7 @@ def fourier_transform(x):
 
 
 class Adaline(object):
-    def __init__(self, label, no_of_inputs, learning_rate=0.001, iterations=10000, biased=False):
+    def __init__(self, label, no_of_inputs, learning_rate=0.001, iterations=1000, biased=False):
         self.no_of_inputs = no_of_inputs
         self.learning_rate = learning_rate
         self.iterations = iterations
